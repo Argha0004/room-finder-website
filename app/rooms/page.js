@@ -1,10 +1,13 @@
 "use client";
+
 export const dynamic = "force-dynamic";
+export const fetchCache = "force-no-store";
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useSearchParams, useRouter } from "next/navigation";
+
 
 export default function RoomsPage() {
   const [rooms, setRooms] = useState([]);
