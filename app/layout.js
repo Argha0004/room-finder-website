@@ -1,15 +1,15 @@
-import './globals.css';
-import Navbar from '../components/Navbar';
+import "./globals.css";
+import Navbar from "@/components/Navbar";
 
 export const metadata = {
-  title: 'Room Finder',
-  description: 'Find rooms easily',
+  title: "RoomFinder",
+  description: "Find rooms easily",
 };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className="bg-black text-white">
+      <body className="bg-white text-black">
         <Navbar />
         {children}
       </body>

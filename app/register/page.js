@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
 
@@ -16,25 +16,42 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(null);
 
+  // Block direct access without role
+  useEffect(() => {
+    const role = localStorage.getItem("selectedRole");
+    if (!role) {
+      router.push("/select-role");
+    }
+  }, [router]);
+
   const handleRegister = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    setSuccess(null);
 
-    const { error } = await supabase.auth.signUp({
+    const role = localStorage.getItem("selectedRole") || "user";
+
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
     });
 
     if (error) {
       setError(error.message);
-    } else {
-      setSuccess("Account created! Check your email to confirm.");
-      setTimeout(() => {
-        router.push("/login");
-      }, 2000);
+      setLoading(false);
+      return;
     }
+
+    await supabase.from("profiles").insert([
+      { id: data.user.id, role },
+    ]);
+
+    localStorage.removeItem("selectedRole");
+    setSuccess("Account created! Check your email.");
+
+    setTimeout(() => {
+      router.push("/login");
+    }, 1500);
 
     setLoading(false);
   };
@@ -81,20 +98,10 @@ export default function RegisterPage() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-blue-600 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+          className="w-full bg-blue-600 py-2 rounded hover:bg-blue-700"
         >
-          {loading ? "Creating account..." : "Register"}
+          Register
         </button>
-
-        <p className="text-sm text-center text-gray-400">
-          Already have an account?{" "}
-          <span
-            className="text-blue-400 cursor-pointer hover:underline"
-            onClick={() => router.push("/login")}
-          >
-            Login
-          </span>
-        </p>
       </form>
     </main>
   );

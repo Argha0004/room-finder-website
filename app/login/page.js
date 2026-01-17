@@ -1,7 +1,8 @@
 // app/login/page.js
+
 "use client";
 
-import { useState, useEffect } from "react"; // ✅ FIX HERE
+import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
 
@@ -14,18 +15,15 @@ export default function LoginPage() {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // ✅ Prevent logged-in users from seeing login page
-
+  // Block login page for logged-in users
   useEffect(() => {
     const checkSession = async () => {
       const {
         data: { session },
       } = await supabase.auth.getSession();
 
-      if (!session) {
-        router.push("/login");
-      } else {
-        setLoading(false);
+      if (session) {
+        router.push("/");
       }
     };
 
@@ -44,11 +42,12 @@ export default function LoginPage() {
 
     if (error) {
       setError(error.message);
-    } else {
-      router.push("/");
+      setLoading(false);
+      return;
     }
 
-    setLoading(false);
+    // ✅ ALWAYS go to homepage
+    router.push("/");
   };
 
   return (

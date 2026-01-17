@@ -4,26 +4,65 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 import { useEffect, useState } from "react";
 import getUserRole from "@/lib/getUserRole";
+import { useRouter } from "next/navigation";
 
 export default function Navbar() {
-  const [role, setRole] = useState(null);
+  const router = useRouter();
 
+  // ✅ Hooks ALWAYS at top
+  const [role, setRole] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  // ✅ Navbar ONLY reads auth state — NO redirects
   useEffect(() => {
-    getUserRole().then(setRole);
+    const loadRole = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!session) {
+        setRole(null);
+        setLoading(false);
+        return;
+      }
+
+      const userRole = await getUserRole();
+      setRole(userRole);
+      setLoading(false);
+    };
+
+    loadRole();
+
+    // ✅ React to login/logout instantly
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(() => {
+      loadRole();
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
+  // 🔒 dependency array NEVER changes
 
   const logout = async () => {
     await supabase.auth.signOut();
-    window.location.href = "/login";
+    router.push("/login");
   };
 
+  // ✅ Safe early return AFTER hooks
+  if (loading) return null;
+
   return (
-    <nav className="flex justify-between items-center px-6 py-4 bg-zinc-900 border-b border-zinc-800">
-      <Link href="/" className="text-xl font-bold text-teal-400">
-        RoomFinder
+    <nav className="w-full px-6 py-4 flex items-center justify-between bg-[#FF9494]">
+      {/* LOGO → HOME */}
+      <Link href="/">
+        <h1 className="text-xl font-bold text-[#2B2A2A] cursor-pointer hover:opacity-80 transition">
+          RoomFinder
+        </h1>
       </Link>
 
-      <div className="flex gap-4 items-center text-sm">
+      {/* NAV LINKS */}
+      <div className="flex items-center gap-6 text-[#2B2A2A] font-medium">
         <Link href="/rooms">Rooms</Link>
 
         {role === "owner" && (
@@ -34,16 +73,14 @@ export default function Navbar() {
           </>
         )}
 
-        {role === "user" && (
-          <Link href="/my-enquiries">My Enquiries</Link>
+        {role && (
+          <button
+            onClick={logout}
+            className="ml-4 px-4 py-1 rounded-md bg-[#0E21A0] text-white font-semibold hover:bg-[#E37434]"
+          >
+            Logout
+          </button>
         )}
-
-        <button
-          onClick={logout}
-          className="bg-orange-500 px-4 py-1 rounded text-black font-semibold"
-        >
-          Logout
-        </button>
       </div>
     </nav>
   );
