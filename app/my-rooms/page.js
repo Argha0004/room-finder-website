@@ -1,14 +1,15 @@
-// app/my-rooms/pages.js
+// app/my-rooms/page.js
 
 "use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
-import useAuth from "@/lib/useAuth"; 
+import useAuth from "@/lib/userAuth";
 
 export default function MyRoomsPage() {
-  const { user, role, loading } = useAuth();
+  const router = useRouter();        // ✅ FIRST
+  const { user, role, loading } = useAuth(); // ✅ SECOND
 
   if (loading) return null;
 
@@ -16,7 +17,7 @@ export default function MyRoomsPage() {
     router.push("/");
     return null;
   }
-  const router = useRouter();
+
   const [rooms, setRooms] = useState([]);
   const [loadedImages, setLoadedImages] = useState({});
 
