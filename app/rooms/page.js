@@ -6,7 +6,8 @@ export const fetchCache = "force-no-store";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
+
 
 
 export default function RoomsPage() {
